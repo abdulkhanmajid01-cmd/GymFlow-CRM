@@ -19,7 +19,21 @@ const generateToken = require("../utils/generateToken");
 const registerUser = asyncHandler(async (req, res) => {
 
   // Get data from request body
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password } = req.body;
+
+  // Normalize role
+  const role = (req.body.role || "").trim().toLowerCase();
+
+  // Allowed Roles
+  const allowedRoles = ["admin", "receptionist", "trainer"];
+
+  // Validate Role
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid role. Allowed roles are: ${allowedRoles.join(", ")}`,
+    });
+  }
 
   // Check if email already exists in the entire system
   const emailExists = await checkEmailExists({
@@ -28,8 +42,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Stop registration if email already exists
   if (emailExists) {
-    res.status(409);
-    throw new Error("Email already exists in the system");
+    return res.status(409).json({
+      success: false,
+      message: "Email already exists in the system",
+    });
   }
 
   // Hash password before saving into database
@@ -68,7 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // Find user by email
   const user = await User.findOne({ email });
 
-  // If user not found
+  // User not found
   if (!user) {
     return res.status(401).json({
       success: false,
@@ -97,9 +113,7 @@ const loginUser = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Login successful",
-
     token,
-
     data: {
       id: user._id,
       fullName: user.fullName,
@@ -114,6 +128,7 @@ const loginUser = asyncHandler(async (req, res) => {
 // Get All Users
 // ==========================
 const getAllUsers = asyncHandler(async (req, res) => {
+
   // Get all users except password
   const users = await User.find().select("-password");
 
@@ -123,8 +138,10 @@ const getAllUsers = asyncHandler(async (req, res) => {
     count: users.length,
     data: users,
   });
+
 });
 
+// Export Controllers
 module.exports = {
   registerUser,
   loginUser,

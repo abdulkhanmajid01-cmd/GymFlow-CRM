@@ -7,6 +7,9 @@ const router = express.Router();
 // Import Authentication Middleware
 const protect = require("../middleware/protect");
 
+// Import Role-Based Authorization Middleware
+const authorize = require("../middleware/authorize");
+
 // Import Member Controllers
 const {
   createMember,
@@ -16,46 +19,86 @@ const {
   deleteMember,
 } = require("../controllers/memberController");
 
-
 // ==========================
 // Get All Members
 // Protected Route
 // GET /api/members
+//
+// Allowed Roles:
+// admin
+// receptionist
+// trainer
 // ==========================
-router.get("/", protect, getAllMembers);
-
+router.get(
+  "/",
+  protect,
+  authorize("admin", "receptionist", "trainer"),
+  getAllMembers
+);
 
 // ==========================
 // Get Single Member
 // Protected Route
 // GET /api/members/:id
+//
+// Allowed Roles:
+// admin
+// receptionist
+// trainer
 // ==========================
-router.get("/:id", protect, getSingleMember);
-
+router.get(
+  "/:id",
+  protect,
+  authorize("admin", "receptionist", "trainer"),
+  getSingleMember
+);
 
 // ==========================
 // Create Member
 // Protected Route
 // POST /api/members
+//
+// Allowed Roles:
+// admin
+// receptionist
 // ==========================
-router.post("/", protect, createMember);
-
+router.post(
+  "/",
+  protect,
+  authorize("admin", "receptionist"),
+  createMember
+);
 
 // ==========================
 // Update Member
 // Protected Route
 // PUT /api/members/:id
+//
+// Allowed Roles:
+// admin
+// receptionist
 // ==========================
-router.put("/:id", protect, updateMember);
-
+router.put(
+  "/:id",
+  protect,
+  authorize("admin", "receptionist"),
+  updateMember
+);
 
 // ==========================
 // Delete Member
 // Protected Route
 // DELETE /api/members/:id
+//
+// Allowed Roles:
+// admin
 // ==========================
-router.delete("/:id", protect, deleteMember);
-
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin"),
+  deleteMember
+);
 
 // Export Router
 module.exports = router;
