@@ -1,91 +1,125 @@
-# 🏋️ GymFlow CRM
+# 🏋️ GymFlow CRM (SaaS)
 
-A full-stack Gym Management CRM built using modern web technologies.
+GymFlow CRM is a production-level SaaS Gym Management System built with the MERN Stack.
 
-## 🚀 Tech Stack
+The goal of this project is to create a multi-tenant Gym CRM that can be used by multiple gyms with subscription-based access.
 
-### Frontend
+---
+
+# 🚀 Tech Stack
+
+## Frontend
 - Next.js
 - React.js
 - CSS
 
-### Backend
+## Backend
 - Node.js
 - Express.js
-- MongoDB
+- MongoDB Atlas
+- Mongoose
+
+## Authentication
 - JWT Authentication
-- bcrypt.js
+- bcrypt Password Hashing
 
-## ✨ Features
+---
 
-- Secure Authentication (JWT)
-- Role-Based Access Control (Admin, Receptionist, Trainer)
-- Member Management
-- Dashboard APIs
-- Protected Routes
-- REST APIs
-- Production-level Project Structure
-
-## 📂 Project Structure
+# 📁 Project Structure
 
 ```
 GymFlow-CRM
 │
-├── backend
-│   ├── controllers
-│   ├── models
-│   ├── routes
-│   ├── middleware
-│   ├── utils
-│   └── config
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── package.json
 │
-├── frontend
-│   ├── src
-│   ├── public
-│   └── app
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── utils/
+│   └── server.js
 │
 └── README.md
 ```
 
-## ⚙️ Installation
+---
 
-### Clone Repository
+# ✅ Features Completed
 
-```bash
-git clone https://github.com/abdulkhanmajid01-cmd/GymFlow-CRM.git
-```
+## Authentication
 
-### Backend
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## 📌 Current Progress
-
-- ✅ Backend Authentication
-- ✅ JWT Authentication
-- ✅ Member CRUD APIs
-- ✅ Protected Routes
-- ✅ MongoDB Integration
-- 🔄 Role-Based Authorization (In Progress)
-- 🔄 Dashboard APIs
-- 🔄 Next.js Frontend
-
-## 👨‍💻 Author
-
-**Abdul Majid Khan**
+- User Registration
+- User Login
+- Password Hashing
+- JWT Authentication
+- Protected Routes
 
 ---
 
-⭐ This project is being built using production-level development practices.
+## Role Based Access Control (RBAC)
+
+Supported Roles
+
+- Admin
+- Receptionist
+- Trainer
+
+Implemented:
+
+- Authentication Middleware
+- Authorization Middleware
+- Protected APIs
+
+---
+
+## Members Module
+
+Completed APIs
+
+- Create Member
+- Get All Members
+- Get Single Member
+- Update Member
+- Delete Member
+
+---
+
+# 🧪 Backend Testing
+
+Tested using Postman
+
+- JWT Authentication
+- Protected Routes
+- RBAC
+- CRUD Operations
+- Validation Errors
+
+---
+
+# 🔜 Upcoming Features
+
+- Membership Plans
+- Trainer Assignment
+- Attendance Management
+- Payments Module
+- Dashboard APIs
+- Reports
+- Notifications
+- Multi-Tenant SaaS
+- Super Admin Panel
+- Subscription Management
+
+---
+
+# 👨‍💻 Developer
+
+**Abdul Majid Khan**
+
+Software Engineering Student
+
+Building GymFlow CRM as a Production-Level SaaS Application.
