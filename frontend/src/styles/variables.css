@@ -1,0 +1,57 @@
+/* ===========================================
+   GymFlow CRM Design Tokens
+   =========================================== */
+
+:root {
+
+  /* ===========================================
+     Brand Colors
+     =========================================== */
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+
+  --color-secondary: #64748b;
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+
+  --color-border: #e2e8f0;
+
+  --color-text: #0f172a;
+  --color-text-light: #64748b;
+
+  /* ===========================================
+     Border Radius
+     =========================================== */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* ===========================================
+     Shadows
+     =========================================== */
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+
+  --shadow-md: 0 6px 18px rgba(0,0,0,.08);
+
+  --shadow-lg: 0 12px 30px rgba(0,0,0,.12);
+
+  /* ===========================================
+     Animation
+     =========================================== */
+
+  --transition-fast: .20s ease;
+
+  --transition-normal: .30s ease;
+
+  --transition-slow: .45s ease;
+
+}

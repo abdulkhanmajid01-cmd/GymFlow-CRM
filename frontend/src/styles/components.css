@@ -1,0 +1,145 @@
+/* ===========================================
+   Buttons
+=========================================== */
+
+.btn-primary{
+
+    @apply
+    bg-blue-600
+    hover:bg-blue-700
+    text-white
+    font-medium
+    px-5
+    py-2.5
+    rounded-lg
+    transition-all
+    duration-300;
+
+}
+
+.btn-secondary{
+
+    @apply
+    bg-slate-200
+    hover:bg-slate-300
+    text-slate-700
+    font-medium
+    px-5
+    py-2.5
+    rounded-lg
+    transition-all
+    duration-300;
+
+}
+
+.btn-danger{
+
+    @apply
+    bg-red-600
+    hover:bg-red-700
+    text-white
+    font-medium
+    px-5
+    py-2.5
+    rounded-lg
+    transition-all
+    duration-300;
+
+}
+
+
+/* ===========================================
+   Cards
+=========================================== */
+
+.crm-card{
+
+    @apply
+    bg-white
+    rounded-xl
+    shadow-md
+    border
+    border-slate-200
+    p-6;
+
+}
+
+
+/* ===========================================
+   Inputs
+=========================================== */
+
+.crm-input{
+
+    @apply
+    w-full
+    rounded-lg
+    border
+    border-slate-300
+    px-4
+    py-3
+    outline-none
+    transition-all
+    duration-300
+    focus:ring-2
+    focus:ring-blue-500
+    focus:border-blue-500;
+
+}
+
+
+/* ===========================================
+   Badges
+=========================================== */
+
+.badge-success{
+
+    @apply
+    inline-flex
+    items-center
+    rounded-full
+    bg-green-100
+    text-green-700
+    px-3
+    py-1
+    text-xs
+    font-semibold;
+
+}
+
+.badge-danger{
+
+    @apply
+    inline-flex
+    items-center
+    rounded-full
+    bg-red-100
+    text-red-700
+    px-3
+    py-1
+    text-xs
+    font-semibold;
+
+}
+
+
+/* ===========================================
+   Page Titles
+=========================================== */
+
+.page-title{
+
+    @apply
+    text-3xl
+    font-bold
+    text-slate-900;
+
+}
+
+.page-subtitle{
+
+    @apply
+    text-slate-500
+    mt-1;
+
+}

@@ -17,19 +17,20 @@ const protect = require("../middleware/protect");
 // Import Role-Based Authorization Middleware
 const authorize = require("../middleware/authorize");
 
+
 // ==========================
 // Register New User
 // POST /api/auth/register
 //
-// Allowed Roles:
-// admin
+// Public Route
+//
+// NOTE:
+// During development this route is public.
+// In SaaS Phase this route will be protected
+// so only Admin/Super Admin can create users.
 // ==========================
-router.post(
-  "/register",
-  protect,
-  authorize("admin"),
-  registerUser
-);
+router.post("/register", registerUser);
+
 
 // ==========================
 // Login User
@@ -38,6 +39,7 @@ router.post(
 // Public Route
 // ==========================
 router.post("/login", loginUser);
+
 
 // ==========================
 // Get All Users
@@ -52,6 +54,7 @@ router.get(
   authorize("admin"),
   getAllUsers
 );
+
 
 // Export Router
 module.exports = router;
