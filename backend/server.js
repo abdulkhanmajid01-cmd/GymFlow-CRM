@@ -17,6 +17,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const membershipPlanRoutes = require("./routes/membershipPlanRoutes");
+const membershipReminderRoutes = require("./routes/membershipReminderRoutes");
 
 // Load .env file
 dotenv.config();
@@ -53,14 +54,25 @@ app.use("/api/auth", authRoutes);
 app.use("/api/members", memberRoutes);
 
 // Membership Plan Routes
-app.use("/api/membership-plans", membershipPlanRoutes);
+app.use(
+  "/api/membership-plans",
+  membershipPlanRoutes
+);
+
+// Membership Reminder Routes
+app.use(
+  "/api/membership-reminders",
+  membershipReminderRoutes
+);
 
 // ---------------------
 // Test Route
 // ---------------------
 
 app.get("/", (req, res) => {
-  res.send("GymFlow CRM Backend is Running...");
+  res.send(
+    "GymFlow CRM Backend is Running..."
+  );
 });
 
 // ---------------------
@@ -76,5 +88,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(
+    `🚀 Server is running on port ${PORT}`
+  );
 });

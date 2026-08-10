@@ -4,8 +4,11 @@ backend/node_modules/
 frontend/node_modules/
 
 # Environment Files
+
 .env
 .env.*
+*.env
+*.env.*
 backend/.env
 frontend/.env
 

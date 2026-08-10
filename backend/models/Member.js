@@ -1,9 +1,5 @@
-// Import Mongoose
 const mongoose = require("mongoose");
 
-// ==========================
-// Member Schema
-// ==========================
 const memberSchema = new mongoose.Schema({
   // Full Name
   fullName: {
@@ -50,14 +46,22 @@ const memberSchema = new mongoose.Schema({
     trim: true,
   },
 
-  // ==========================
-  // Membership Plan Relation
-  // Stores ObjectId of MembershipPlan
-  // ==========================
+  // Membership Plan
   membershipPlan: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "MembershipPlan",
     required: true,
+  },
+
+  // Joining Date
+  joiningDate: {
+    type: Date,
+    default: Date.now,
+  },
+
+  // Membership Expiry Date
+  membershipExpiryDate: {
+    type: Date,
   },
 
   // Created Date
@@ -67,5 +71,4 @@ const memberSchema = new mongoose.Schema({
   },
 });
 
-// Export Model
 module.exports = mongoose.model("Member", memberSchema);
