@@ -2,7 +2,7 @@
 
 GymFlow CRM is a production-oriented SaaS Gym Management System built with **Next.js, Node.js, Express.js, and MongoDB**.
 
-The goal of GymFlow CRM is to provide a complete gym management platform that can support multiple gyms with role-based access, gym operations, membership management, staff management, payments, attendance, and subscription-based SaaS functionality.
+The goal of GymFlow CRM is to provide a complete gym management platform with role-based access, membership management, staff management, attendance, payments, reports, and subscription-based SaaS functionality.
 
 ---
 
@@ -44,12 +44,15 @@ GymFlow-CRM/
 │   │   ├── app/
 │   │   │   ├── dashboard/
 │   │   │   ├── login/
-│   │   │   └── membership-plans/
+│   │   │   ├── members/
+│   │   │   ├── membership-plans/
+│   │   │   └── staff/
 │   │   │
 │   │   ├── components/
 │   │   │   ├── common/
 │   │   │   ├── layout/
-│   │   │   └── membership-plans/
+│   │   │   ├── membership-plans/
+│   │   │   └── staff/
 │   │   │
 │   │   ├── context/
 │   │   ├── services/
@@ -71,12 +74,104 @@ GymFlow-CRM/
 │   └── server.js
 │
 └── README.md
-
 🔐 Authentication & Role-Based Access Control
 
-GymFlow CRM uses role-based access control to provide different levels of access to different users.
+GymFlow CRM uses JWT-based authentication and role-based authorization.
 
-Role Hierarchy
+Supported Roles
+Admin
+   │
+   ├── Receptionist
+   │
+   └── Trainer
+
+A future Super Admin role is planned for the SaaS platform layer.
+
+👑 Admin
+
+The Admin manages the operations of an individual gym.
+
+Admin Permissions
+Access Admin Dashboard
+Manage Members
+Create Receptionist accounts
+Create Trainer accounts
+Edit Receptionist accounts
+Edit Trainer accounts
+Delete Receptionist accounts
+Delete Trainer accounts
+Manage Membership Plans
+Manage Payments
+Manage Attendance
+Access administrative reports
+Manage gym settings
+
+Admin accounts cannot be created or deleted through Staff Management.
+
+🧑‍💼 Receptionist
+
+Receptionists handle front-desk and customer-facing gym operations.
+
+Receptionist Permissions
+Access Receptionist Dashboard
+View Members
+Create Members
+Update Members
+Manage Membership Operations
+Manage Attendance
+Manage Payments
+Handle customer-facing operations
+
+Receptionists cannot:
+
+Create Staff accounts
+Manage Admin accounts
+Manage Membership Plan configuration
+Access Admin-only settings
+🏋️ Trainer
+
+Trainers handle training-related gym operations.
+
+Trainer Permissions
+Access Trainer Dashboard
+View Members
+View assigned/member information
+Manage Attendance
+Training-related operations
+
+Future Trainer features include:
+
+Assigned Members
+Workout Plans
+Member Progress
+Trainer Attendance
+Appointments
+
+Trainers cannot:
+
+Create Staff accounts
+Manage Admin accounts
+Manage Membership Plans
+Manage Payments
+Access Admin settings
+🔑 Account Creation Flow
+
+The current staff creation flow is:
+
+Admin
+  │
+  ├── Create Receptionist
+  │
+  └── Create Trainer
+
+Staff accounts are created directly from the Admin Dashboard → Staff Management interface.
+
+No dummy staff data is used.
+
+Staff displayed in the Staff Management page comes directly from the MongoDB database.
+
+A future SaaS architecture will introduce:
+
 Super Admin
      │
      ▼
@@ -84,110 +179,127 @@ Super Admin
    ┌───────┴────────┐
    ▼                ▼
 Receptionist      Trainer
-Super Admin
+🛡️ Authentication Middleware
 
-Super Admin has the highest level of system access.
+GymFlow CRM currently uses two major middleware layers.
 
-Responsibilities:
+Protect Middleware
 
-Manage Admin accounts
-Manage system-level settings
-Manage SaaS subscriptions
-Manage gyms/tenants
-Access platform-wide analytics
-Manage overall SaaS infrastructure
+The protect middleware:
 
-The Super Admin frontend/dashboard will be implemented later, while the role is being considered in the backend architecture from the beginning.
+Reads JWT from Authorization header
+Verifies JWT token
+Loads the authenticated user
+Attaches user information to req.user
+Rejects missing or invalid tokens
 
-Admin
+Example:
 
-Admin manages the operations of an individual gym.
-
-Responsibilities:
-
-Create and manage Receptionist accounts
-Create and manage Trainer accounts
-Manage Members
-Manage Membership Plans
-Manage gym operations
-Manage payments
-Manage attendance
-Access administrative reports
-Manage gym settings
-Receptionist
-
-Receptionist handles front-desk and customer-facing operations.
-
-Planned responsibilities:
-
-Member registration
-Member information
-Membership operations
-Attendance
-Payments
-Appointments
-
-Receptionists cannot create or manage Admin accounts.
-
-Trainer
-
-Trainer handles member training-related operations.
-
-Planned responsibilities:
-
-Assigned members
-Workout plans
-Member progress
-Trainer attendance
-Appointments
-
-Trainers cannot create or manage Admin accounts.
-
-🔑 Account Creation Flow
-
-The planned account hierarchy is:
-
-Super Admin
-     │
-     └── Creates Admin
-            │
-            ├── Creates Receptionist
-            │
-            └── Creates Trainer
-
-Super Admin accounts will not be created through the normal Admin dashboard.
-
-The initial Super Admin account will be created through a secure setup/seed process.
-
-✅ Features Completed
-Authentication
-User Registration
-User Login
-Password Hashing
-JWT Authentication
-Protected Routes
-Authentication Context
-Role-Based Authorization
-🛡️ Role-Based Access Control
-
-Implemented:
-
-Authentication Middleware
+Authorization: Bearer <JWT_TOKEN>
 Authorization Middleware
-Protected APIs
-Role-based route permissions
-Admin-only operations
-Role-based API access
+
+The authorize() middleware checks the authenticated user's role.
+
+Examples:
+
+authorize("admin")
+authorize("admin", "receptionist")
+authorize("admin", "receptionist", "trainer")
+
+This provides API-level Role-Based Access Control.
+
+👥 Staff Management Module
+
+The Staff Management module is implemented for the Admin dashboard.
+
+Completed Features
+View all staff
+Create Receptionist
+Create Trainer
+Edit staff
+Update staff role
+Update staff email
+Update staff password
+Activate/deactivate staff
+Delete staff
+Email uniqueness validation
+Password hashing
+Role validation
+Admin-only staff management
+Loading states
+Error handling
+Empty states
+Delete confirmation
+Dynamic staff information
+Role-based UI
+
+Only users with the admin role can access Staff Management.
+
+🔗 Staff Management API
+
+The Staff module supports full CRUD operations.
+
+GET     /api/staff
+POST    /api/staff
+PUT     /api/staff/:id
+DELETE  /api/staff/:id
+
+All Staff Management endpoints are protected.
+
+protect
+   ↓
+authorize("admin")
+   ↓
+Controller
+👤 Staff Data Model
+
+Staff accounts use the existing User model.
 
 Supported roles:
 
-Super Admin
-Admin
-Receptionist
-Trainer
+admin
+receptionist
+trainer
+
+User records contain:
+
+Full Name
+Email
+Password
+Role
+Active Status
+Created At
+Updated At
+
+Passwords are never stored as plain text.
+
+They are hashed using bcrypt.
+
+🔐 Staff Security
+
+Staff creation follows this process:
+
+Admin Dashboard
+      ↓
+Staff Form
+      ↓
+POST /api/staff
+      ↓
+JWT Verification
+      ↓
+Admin Authorization
+      ↓
+Email Validation
+      ↓
+Password Hashing
+      ↓
+MongoDB
+
+This ensures that staff accounts are created through the actual application workflow.
+
 💳 Membership Plans Module
 
-The Membership Plans module is currently implemented for the Admin dashboard.
+The Membership Plans module is implemented for the Admin dashboard.
 
 Completed Features
 View all membership plans
@@ -195,7 +307,7 @@ Search membership plans
 Create membership plan
 Edit membership plan
 Delete membership plan
-Delete confirmation modal
+Delete confirmation
 Membership plan status
 Plan duration
 Plan pricing
@@ -208,82 +320,67 @@ Reusable DataTable
 Reusable Modal
 Reusable Button
 Status badges
-Hover-based feature preview
+Feature preview
 Animated feature popup
+
+Membership Plan configuration is currently an Admin-only operation.
+
 🔗 Membership Plans API
-
-The Membership Plans module supports full CRUD operations.
-
 GET     /api/membership-plans
 GET     /api/membership-plans/:id
 POST    /api/membership-plans
 PUT     /api/membership-plans/:id
 DELETE  /api/membership-plans/:id
-Frontend Service Functions
+
+Frontend service functions:
+
 getAllMembershipPlans()
 getMembershipPlanById()
 createMembershipPlan()
 updateMembershipPlan()
 deleteMembershipPlan()
-API Responsibilities
-getAllMembershipPlans()
-        ↓
-Returns all membership plans
-
-getMembershipPlanById()
-        ↓
-Returns one specific membership plan
-
-createMembershipPlan()
-        ↓
-Creates a new membership plan
-
-updateMembershipPlan()
-        ↓
-Updates an existing membership plan
-
-deleteMembershipPlan()
-        ↓
-Deletes a membership plan
-🎨 Membership Plans UI
-
-The Membership Plans interface includes:
-
-Responsive data table
-Search toolbar
-Add Plan modal
-Edit Plan modal
-Delete confirmation modal
-Active/Inactive status badges
-Plan feature preview
-Hover-based feature popup
-Popup animation
-Feature fade-in animation
-Loading indicator
-Empty state
-Error handling
-
-The feature popup opens automatically when the user moves the cursor over the View All area.
-
-No additional click is required.
-
 👥 Members Module
 
-Backend CRUD APIs have been implemented for members.
+The Members module includes backend CRUD functionality.
 
-Completed APIs:
+Completed Backend APIs
+GET     /api/members
+GET     /api/members/:id
+POST    /api/members
+PUT     /api/members/:id
+DELETE  /api/members/:id
+Current Permissions
+View Members
+    │
+    ├── Admin
+    ├── Receptionist
+    └── Trainer
 
-Create Member
-Get All Members
-Get Single Member
-Update Member
-Delete Member
+Create / Update Members
+    │
+    ├── Admin
+    └── Receptionist
 
-Frontend member management is part of the upcoming Admin dashboard development.
+Delete Members
+    │
+    └── Admin
+🔔 Membership Expiry Notifications
+
+GymFlow CRM includes membership expiry notifications.
+
+The system checks membership expiry dates and generates alerts for:
+
+Expired memberships
+Memberships expiring today
+Memberships expiring tomorrow
+Memberships expiring within 3 days
+Memberships expiring within 7 days
+
+Notifications are displayed in the dashboard Navbar.
 
 🧪 Backend Testing
 
-Backend APIs are being tested using Postman.
+Backend APIs are being tested using Postman during development.
 
 Testing includes:
 
@@ -294,9 +391,12 @@ CRUD Operations
 Request Validation
 Authorization Errors
 API Responses
+
+Frontend-to-backend integration testing is also performed through the actual application.
+
 🔄 Application Architecture
 
-GymFlow CRM follows a modular full-stack architecture:
+GymFlow CRM follows a modular full-stack architecture.
 
 Next.js Frontend
        │
@@ -327,7 +427,7 @@ MongoDB
 
 GymFlow CRM is planned as a multi-tenant SaaS application.
 
-The long-term architecture will allow:
+Long-term architecture:
 
 GymFlow CRM
 │
@@ -346,19 +446,15 @@ GymFlow CRM
 └── Super Admin
     └── Platform Management
 
-Each gym will have isolated operational data while the Super Admin manages the overall SaaS platform.
+Each gym will eventually have isolated operational data.
 
-🔜 Upcoming Features
-Admin Dashboard
-Members Management
-Staff Management
-Trainer Management
-Receptionist Management
+🚧 Upcoming Features
+Admin Module
 Attendance Management
 Payments
 Reports
-Notifications
 Settings
+Receptionist Module
 Receptionist Dashboard
 Member Registration
 Member Management
@@ -366,18 +462,20 @@ Membership Operations
 Attendance
 Payments
 Appointments
+Trainer Module
 Trainer Dashboard
 Assigned Members
 Workout Plans
 Member Progress
 Trainer Attendance
 Appointments
-Super Admin Panel
+Super Admin
+Super Admin Dashboard
 Admin Account Management
 Gym/Tenant Management
 SaaS Subscription Management
-System Analytics
-Platform Settings
+Platform Analytics
+System Settings
 SaaS Features
 Multi-Tenant Architecture
 Gym Registration
@@ -388,66 +486,50 @@ SaaS Analytics
 Platform Administration
 🗺️ Development Roadmap
 PHASE 1 — FOUNDATION
-│
-├── Project Setup                  ✅
-├── Frontend Setup                 ✅
-├── Backend Setup                  ✅
-├── MongoDB Integration            ✅
-├── Authentication                 ✅
-├── JWT Authentication             ✅
-├── RBAC                            ✅
-└── Backend Foundation             ✅
-
-
+Project Setup                  ✅
+Frontend Setup                 ✅
+Backend Setup                  ✅
+MongoDB Integration            ✅
+Authentication                 ✅
+JWT Authentication             ✅
+RBAC                           ✅
+Backend Foundation             ✅
 PHASE 2 — ADMIN MODULE
-│
-├── Admin Dashboard                🔄
-├── Membership Plans               ✅
-├── Members Module                 🔄
-├── Staff Management               ⏳
-├── Attendance                     ⏳
-├── Payments                       ⏳
-├── Reports                        ⏳
-└── Settings                       ⏳
-
-
+Admin Dashboard                🔄
+Membership Plans               ✅
+Members Module                 🔄
+Staff Management               ✅
+Attendance                     ⏳
+Payments                       ⏳
+Reports                        ⏳
+Settings                       ⏳
 PHASE 3 — RECEPTIONIST MODULE
-│
-├── Receptionist Dashboard         ⏳
-├── Member Operations              ⏳
-├── Membership Operations          ⏳
-├── Attendance                     ⏳
-├── Payments                       ⏳
-└── Appointments                   ⏳
-
-
+Receptionist Dashboard         ⏳
+Member Operations              ⏳
+Membership Operations          ⏳
+Attendance                     ⏳
+Payments                       ⏳
+Appointments                   ⏳
 PHASE 4 — TRAINER MODULE
-│
-├── Trainer Dashboard              ⏳
-├── Assigned Members               ⏳
-├── Workout Plans                  ⏳
-├── Member Progress                ⏳
-├── Trainer Attendance             ⏳
-└── Appointments                   ⏳
-
-
+Trainer Dashboard              ⏳
+Assigned Members               ⏳
+Workout Plans                  ⏳
+Member Progress                ⏳
+Trainer Attendance             ⏳
+Appointments                   ⏳
 PHASE 5 — SUPER ADMIN
-│
-├── Super Admin Dashboard          ⏳
-├── Admin Management               ⏳
-├── Gym/Tenant Management          ⏳
-├── Platform Analytics             ⏳
-└── System Settings                ⏳
-
-
+Super Admin Dashboard          ⏳
+Admin Management               ⏳
+Gym/Tenant Management          ⏳
+Platform Analytics             ⏳
+System Settings                ⏳
 PHASE 6 — SaaS
-│
-├── Multi-Tenant Architecture      ⏳
-├── Subscription Management        ⏳
-├── Billing                         ⏳
-├── Tenant Isolation                ⏳
-├── Notifications                  ⏳
-└── Production Deployment           ⏳
+Multi-Tenant Architecture      ⏳
+Subscription Management        ⏳
+Billing                        ⏳
+Tenant Isolation               ⏳
+Notifications                  ⏳
+Production Deployment           ⏳
 🎯 Project Goal
 
 The long-term goal of GymFlow CRM is to become a production-ready SaaS platform where multiple gyms can independently manage:
@@ -459,17 +541,15 @@ Receptionists
 Attendance
 Payments
 Reports
-Gym operations
+Gym Operations
 
 while the platform owner manages:
 
 Gyms/Tenants
-Admin accounts
-SaaS subscriptions
-Platform analytics
-System configuration
-
-
+Admin Accounts
+SaaS Subscriptions
+Platform Analytics
+System Configuration
 👨‍💻 Developer
 
 Abdul Majid Khan

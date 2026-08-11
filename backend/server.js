@@ -18,6 +18,7 @@ const authRoutes = require("./routes/authRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const membershipPlanRoutes = require("./routes/membershipPlanRoutes");
 const membershipReminderRoutes = require("./routes/membershipReminderRoutes");
+const staffRoutes = require("./routes/staffRoutes");
 
 // Load .env file
 dotenv.config();
@@ -63,6 +64,12 @@ app.use(
 app.use(
   "/api/membership-reminders",
   membershipReminderRoutes
+);
+
+// Staff Routes
+app.use(
+  "/api/staff",
+  staffRoutes
 );
 
 // ---------------------

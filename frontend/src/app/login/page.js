@@ -37,14 +37,31 @@ export default function LoginPage() {
       localStorage.setItem("token", response.token);
 
       // Save Logged In User In Global Context
-      // Backend currently returns "data"
       setUser(response.data);
 
       console.log("✅ Login Successful");
+      console.log("👤 User Role:", response.data?.role);
 
-      // Redirect To Dashboard
-      router.push("/dashboard");
+      // ==========================
+      // Role-Based Redirect
+      // ==========================
 
+      const role = response.data?.role?.toLowerCase();
+
+      if (role === "admin") {
+        router.push("/dashboard");
+      } else if (role === "receptionist") {
+        router.push("/dashboard");
+      } else if (role === "trainer") {
+        router.push("/dashboard");
+      } else {
+        console.error("❌ Invalid user role:", role);
+
+        // Remove token if role is invalid
+        localStorage.removeItem("token");
+
+        throw new Error("Invalid user role.");
+      }
     } catch (error) {
       console.error("❌ Login Failed:", error);
     }
@@ -76,6 +93,7 @@ export default function LoginPage() {
               className="w-full border rounded-lg px-4 py-3"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -92,6 +110,7 @@ export default function LoginPage() {
               className="w-full border rounded-lg px-4 py-3"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 

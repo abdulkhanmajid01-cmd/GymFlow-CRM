@@ -22,10 +22,17 @@ const userSchema = new mongoose.Schema(
     },
 
     role: {
-  type: String,
-  enum: ["admin", "receptionist", "trainer"],
-  default: "receptionist",
-},
+      type: String,
+      enum: ["admin", "receptionist", "trainer"],
+      default: "receptionist",
+    },
+
+    // Admin who created this staff account
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
     isActive: {
       type: Boolean,
