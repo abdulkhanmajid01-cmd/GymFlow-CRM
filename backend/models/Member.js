@@ -53,6 +53,13 @@ const memberSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Assigned Trainer
+  assignedTrainer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+
   // Joining Date
   joiningDate: {
     type: Date,

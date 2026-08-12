@@ -14,6 +14,7 @@ const authorize = require("../middleware/authorize");
 const {
   createStaff,
   getAllStaff,
+  getAllTrainers,
   updateStaff,
   deleteStaff,
 } = require("../controllers/staffController");
@@ -36,6 +37,16 @@ router.get(
   protect,
   authorize("admin"),
   getAllStaff
+);
+
+// Get All Trainers
+// GET /api/staff/trainers
+// Admin / Receptionist
+router.get(
+  "/trainers",
+  protect,
+  authorize("admin", "receptionist"),
+  getAllTrainers
 );
 
 // Create Staff

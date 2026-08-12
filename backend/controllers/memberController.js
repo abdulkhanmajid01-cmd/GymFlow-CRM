@@ -11,7 +11,6 @@ const checkEmailExists = require("../utils/checkEmailExists");
 // Date Helpers
 // ==========================
 
-// Get today's date according to Pakistan timezone
 const getPakistanDateString = () => {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Karachi",
@@ -21,9 +20,6 @@ const getPakistanDateString = () => {
   }).format(new Date());
 };
 
-// Convert YYYY-MM-DD into a stable UTC date
-// Noon UTC prevents the date from shifting when displayed
-// in Pakistan timezone or MongoDB tools.
 const createDateFromDateString = (dateString) => {
   const [year, month, day] = dateString
     .split("-")
@@ -42,20 +38,17 @@ const createDateFromDateString = (dateString) => {
   );
 };
 
-// Add months while keeping the calendar date stable
 const addMonthsToDate = (date, months) => {
   const result = new Date(date);
 
   const originalDay = result.getUTCDate();
 
-  // Move to first day of target month
   result.setUTCDate(1);
 
   result.setUTCMonth(
     result.getUTCMonth() + months
   );
 
-  // Find last day of target month
   const lastDay = new Date(
     Date.UTC(
       result.getUTCFullYear(),
@@ -77,7 +70,6 @@ const addMonthsToDate = (date, months) => {
 
 const createMember = async (req, res, next) => {
   try {
-    // Get required data
     const {
       email,
       membershipPlan,
@@ -165,7 +157,6 @@ const createMember = async (req, res, next) => {
       data: member,
     });
   } catch (error) {
-    // Send error to global error handler
     next(error);
   }
 };
@@ -180,8 +171,21 @@ const getAllMembers = async (
   next
 ) => {
   try {
+    // ==========================
+    // Trainer → Only Assigned Members
+    // Admin / Receptionist → All Members
+    // ==========================
+
+    const filter =
+      req.user.role === "trainer"
+        ? {
+            assignedTrainer:
+              req.user._id,
+          }
+        : {};
+
     const members =
-      await Member.find().populate(
+      await Member.find(filter).populate(
         "membershipPlan"
       );
 
@@ -191,7 +195,6 @@ const getAllMembers = async (
       data: members,
     });
   } catch (error) {
-    // Send error to global error handler
     next(error);
   }
 };
@@ -206,10 +209,24 @@ const getSingleMember = async (
   next
 ) => {
   try {
+    // ==========================
+    // Build Access Filter
+    // ==========================
+
+    const filter = {
+      _id: req.params.id,
+    };
+
+    // Trainer can only access assigned member
+    if (req.user.role === "trainer") {
+      filter.assignedTrainer =
+        req.user._id;
+    }
+
     const member =
-      await Member.findById(
-        req.params.id
-      ).populate("membershipPlan");
+      await Member.findOne(filter).populate(
+        "membershipPlan"
+      );
 
     if (!member) {
       return res.status(404).json({
@@ -223,7 +240,6 @@ const getSingleMember = async (
       data: member,
     });
   } catch (error) {
-    // Send error to global error handler
     next(error);
   }
 };
@@ -303,19 +319,14 @@ const updateMember = async (
           .toISOString()
           .substring(0, 10);
 
-    // Recalculate expiry if:
-    // 1. Membership plan changed
-    // OR
-    // 2. Joining date changed
+    // ==========================
+    // Recalculate Expiry
+    // ==========================
 
     if (
       membershipPlanChanged ||
       joiningDateChanged
     ) {
-      // ==========================
-      // Get Plan
-      // ==========================
-
       const planId =
         req.body.membershipPlan ||
         currentMember.membershipPlan;
@@ -333,10 +344,6 @@ const updateMember = async (
         });
       }
 
-      // ==========================
-      // Determine Start Date
-      // ==========================
-
       const dateString =
         req.body.joiningDate
           ? req.body.joiningDate.substring(
@@ -351,10 +358,6 @@ const updateMember = async (
         createDateFromDateString(
           dateString
         );
-
-      // ==========================
-      // Calculate New Expiry
-      // ==========================
 
       const expiryDate =
         addMonthsToDate(
@@ -383,10 +386,6 @@ const updateMember = async (
         }
       ).populate("membershipPlan");
 
-    // ==========================
-    // Success Response
-    // ==========================
-
     res.status(200).json({
       success: true,
       message:
@@ -394,7 +393,6 @@ const updateMember = async (
       data: updatedMember,
     });
   } catch (error) {
-    // Send error to global error handler
     next(error);
   }
 };
@@ -427,7 +425,6 @@ const deleteMember = async (
         "Member deleted successfully",
     });
   } catch (error) {
-    // Send error to global error handler
     next(error);
   }
 };
@@ -442,4 +439,4 @@ module.exports = {
   getSingleMember,
   updateMember,
   deleteMember,
-};
+};843

@@ -50,6 +50,9 @@ export default function MembersPage() {
   // Form-level error
   const [formError, setFormError] = useState("");
 
+  // Delete modal error
+  const [deleteError, setDeleteError] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [editingMember, setEditingMember] = useState(null);
@@ -292,7 +295,7 @@ export default function MembersPage() {
     if (!deleteMemberData) return;
 
     try {
-      setError("");
+      setDeleteError("");
 
       await deleteMember(
         deleteMemberData._id
@@ -301,11 +304,12 @@ export default function MembersPage() {
       await fetchMembers();
 
       setDeleteMemberData(null);
+      setDeleteError("");
     } catch (err) {
       const friendlyMessage =
         getUserFriendlyError(err?.message);
 
-      setError(friendlyMessage);
+      setDeleteError(friendlyMessage);
     }
   };
 
@@ -512,6 +516,7 @@ export default function MembersPage() {
 
           onDelete={(member) => {
             setError("");
+            setDeleteError("");
             setDeleteMemberData(member);
           }}
         />
@@ -805,6 +810,7 @@ export default function MembersPage() {
 
         onClose={() => {
           setDeleteMemberData(null);
+          setDeleteError("");
           setError("");
         }}
 
@@ -813,6 +819,22 @@ export default function MembersPage() {
       >
 
         <div className="space-y-5">
+
+          {/* Delete Error */}
+
+          {deleteError && (
+            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+
+              <span className="text-base">
+                ⚠️
+              </span>
+
+              <span>
+                {deleteError}
+              </span>
+
+            </div>
+          )}
 
           <p className="text-slate-600">
 
@@ -832,6 +854,7 @@ export default function MembersPage() {
               type="button"
               onClick={() => {
                 setDeleteMemberData(null);
+                setDeleteError("");
               }}
               className="rounded-lg border border-slate-300 px-4 py-2 hover:bg-slate-50"
             >
@@ -840,9 +863,7 @@ export default function MembersPage() {
 
             <button
               type="button"
-              onClick={
-                handleDeleteMember
-              }
+              onClick={handleDeleteMember}
               className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
             >
               Delete

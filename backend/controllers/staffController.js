@@ -107,6 +107,28 @@ const getAllStaff = asyncHandler(async (req, res) => {
 });
 
 // ==========================
+// Get All Trainers
+// GET /api/staff/trainers
+// Admin / Receptionist
+// ==========================
+const getAllTrainers = asyncHandler(async (req, res) => {
+  const trainers = await User.find({
+    role: "trainer",
+    isActive: true,
+  })
+    .select("_id fullName email role")
+    .sort({
+      fullName: 1,
+    });
+
+  res.status(200).json({
+    success: true,
+    count: trainers.length,
+    data: trainers,
+  });
+});
+
+// ==========================
 // Update Staff
 // PUT /api/staff/:id
 // Admin Only
@@ -275,6 +297,7 @@ const deleteStaff = asyncHandler(async (req, res) => {
 module.exports = {
   createStaff,
   getAllStaff,
+  getAllTrainers,
   updateStaff,
   deleteStaff,
 };

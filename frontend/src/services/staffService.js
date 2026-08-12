@@ -8,6 +8,13 @@ export const getAllStaff = async () => {
 };
 
 // ==========================
+// Get All Trainers
+// ==========================
+export const getAllTrainers = async () => {
+  return await apiRequest("/staff/trainers");
+};
+
+// ==========================
 // Create Staff
 // ==========================
 export const createStaff = async (staffData) => {
