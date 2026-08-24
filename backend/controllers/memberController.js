@@ -77,6 +77,19 @@ const createMember = async (req, res, next) => {
     } = req.body;
 
     // ==========================
+    // Gym Context
+    // ==========================
+
+    const gymId = req.user.gymId;
+
+    if (!gymId) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not assigned to a gym",
+      });
+    }
+
+    // ==========================
     // Check Email
     // ==========================
 
@@ -95,18 +108,20 @@ const createMember = async (req, res, next) => {
 
     // ==========================
     // Find Membership Plan
+    // Same Gym Only
     // ==========================
 
     const plan =
-      await MembershipPlan.findById(
-        membershipPlan
-      );
+      await MembershipPlan.findOne({
+        _id: membershipPlan,
+        gymId,
+      });
 
     if (!plan) {
       return res.status(404).json({
         success: false,
         message:
-          "Membership plan not found",
+          "Membership plan not found for this gym",
       });
     }
 
@@ -140,6 +155,10 @@ const createMember = async (req, res, next) => {
     const member = await Member.create({
       ...req.body,
 
+      // IMPORTANT:
+      // Never trust gymId from frontend
+      gymId,
+
       joiningDate: startDate,
 
       membershipExpiryDate:
@@ -172,17 +191,39 @@ const getAllMembers = async (
 ) => {
   try {
     // ==========================
-    // Trainer → Only Assigned Members
-    // Admin / Receptionist → All Members
+    // Gym Context
     // ==========================
 
-    const filter =
-      req.user.role === "trainer"
-        ? {
-            assignedTrainer:
-              req.user._id,
-          }
-        : {};
+    const gymId = req.user.gymId;
+
+    if (!gymId) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not assigned to a gym",
+      });
+    }
+
+    // ==========================
+    // Base Gym Filter
+    // ==========================
+
+    const filter = {
+      gymId,
+    };
+
+    // ==========================
+    // Trainer → Only Assigned Members
+    // Admin / Receptionist → All
+    // ==========================
+
+    if (req.user.role === "trainer") {
+      filter.assignedTrainer =
+        req.user._id;
+    }
+
+    // ==========================
+    // Get Members
+    // ==========================
 
     const members =
       await Member.find(filter).populate(
@@ -210,18 +251,39 @@ const getSingleMember = async (
 ) => {
   try {
     // ==========================
+    // Gym Context
+    // ==========================
+
+    const gymId = req.user.gymId;
+
+    if (!gymId) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not assigned to a gym",
+      });
+    }
+
+    // ==========================
     // Build Access Filter
     // ==========================
 
     const filter = {
       _id: req.params.id,
+      gymId,
     };
 
-    // Trainer can only access assigned member
+    // ==========================
+    // Trainer → Assigned Members Only
+    // ==========================
+
     if (req.user.role === "trainer") {
       filter.assignedTrainer =
         req.user._id;
     }
+
+    // ==========================
+    // Find Member
+    // ==========================
 
     const member =
       await Member.findOne(filter).populate(
@@ -255,13 +317,28 @@ const updateMember = async (
 ) => {
   try {
     // ==========================
+    // Gym Context
+    // ==========================
+
+    const gymId = req.user.gymId;
+
+    if (!gymId) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not assigned to a gym",
+      });
+    }
+
+    // ==========================
     // Find Current Member
+    // Same Gym Only
     // ==========================
 
     const currentMember =
-      await Member.findById(
-        req.params.id
-      );
+      await Member.findOne({
+        _id: req.params.id,
+        gymId,
+      });
 
     if (!currentMember) {
       return res.status(404).json({
@@ -304,6 +381,14 @@ const updateMember = async (
     };
 
     // ==========================
+    // Protect Gym Ownership
+    // ==========================
+
+    // Never allow frontend to change
+    // member's gym.
+    updateData.gymId = gymId;
+
+    // ==========================
     // Check Membership Changes
     // ==========================
 
@@ -331,16 +416,22 @@ const updateMember = async (
         req.body.membershipPlan ||
         currentMember.membershipPlan;
 
+      // ==========================
+      // Find Plan
+      // Same Gym Only
+      // ==========================
+
       const plan =
-        await MembershipPlan.findById(
-          planId
-        );
+        await MembershipPlan.findOne({
+          _id: planId,
+          gymId,
+        });
 
       if (!plan) {
         return res.status(404).json({
           success: false,
           message:
-            "Membership plan not found",
+            "Membership plan not found for this gym",
         });
       }
 
@@ -373,18 +464,53 @@ const updateMember = async (
     }
 
     // ==========================
+    // If Membership Plan
+    // Is Not Changed
+    // Still Validate It
+    // ==========================
+
+    if (
+      req.body.membershipPlan &&
+      !membershipPlanChanged
+    ) {
+      const plan =
+        await MembershipPlan.findOne({
+          _id: req.body.membershipPlan,
+          gymId,
+        });
+
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Membership plan not found for this gym",
+        });
+      }
+    }
+
+    // ==========================
     // Update Member
     // ==========================
 
     const updatedMember =
-      await Member.findByIdAndUpdate(
-        req.params.id,
+      await Member.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          gymId,
+        },
         updateData,
         {
           new: true,
           runValidators: true,
         }
       ).populate("membershipPlan");
+
+    if (!updatedMember) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -407,10 +533,28 @@ const deleteMember = async (
   next
 ) => {
   try {
+    // ==========================
+    // Gym Context
+    // ==========================
+
+    const gymId = req.user.gymId;
+
+    if (!gymId) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not assigned to a gym",
+      });
+    }
+
+    // ==========================
+    // Delete From Current Gym Only
+    // ==========================
+
     const member =
-      await Member.findByIdAndDelete(
-        req.params.id
-      );
+      await Member.findOneAndDelete({
+        _id: req.params.id,
+        gymId,
+      });
 
     if (!member) {
       return res.status(404).json({
@@ -439,4 +583,4 @@ module.exports = {
   getSingleMember,
   updateMember,
   deleteMember,
-};843
+};

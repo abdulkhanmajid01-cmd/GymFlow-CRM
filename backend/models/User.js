@@ -2,12 +2,18 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ==========================
+    // Full Name
+    // ==========================
     fullName: {
       type: String,
       required: [true, "Full name is required"],
       trim: true,
     },
 
+    // ==========================
+    // Email
+    // ==========================
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -16,24 +22,56 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================
+    // Password
+    // ==========================
     password: {
       type: String,
       required: [true, "Password is required"],
     },
 
+    // ==========================
+    // Role
+    // ==========================
     role: {
       type: String,
-      enum: ["admin", "receptionist", "trainer"],
+      enum: [
+        "superAdmin",
+        "admin",
+        "receptionist",
+        "trainer",
+      ],
       default: "receptionist",
     },
 
-    // Admin who created this staff account
+    // ==========================
+    // Gym Ownership
+    // ==========================
+    // Super Admin:
+    // gymId = null
+    //
+    // Gym Admin / Receptionist / Trainer:
+    // gymId = their gym's _id
+    // ==========================
+    gymId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Gym",
+      default: null,
+      index: true,
+    },
+
+    // ==========================
+    // Admin Who Created This User
+    // ==========================
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
 
+    // ==========================
+    // Account Status
+    // ==========================
     isActive: {
       type: Boolean,
       default: true,

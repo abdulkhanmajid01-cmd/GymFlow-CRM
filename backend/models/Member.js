@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
 const memberSchema = new mongoose.Schema({
+  // Gym Ownership
+  gymId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Gym",
+    required: true,
+    index: true,
+  },
+
   // Full Name
   fullName: {
     type: String,

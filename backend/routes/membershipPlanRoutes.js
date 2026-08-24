@@ -1,14 +1,10 @@
-// Import Express
 const express = require("express");
 
-// Create Router
 const router = express.Router();
 
-// Import Middlewares
 const protect = require("../middleware/protect");
 const authorize = require("../middleware/authorize");
 
-// Import Controllers
 const {
   createMembershipPlan,
   getAllMembershipPlans,
@@ -17,15 +13,8 @@ const {
   deleteMembershipPlan,
 } = require("../controllers/membershipPlanController");
 
-
 // ==========================
 // Get All Membership Plans
-// GET /api/membership-plans
-//
-// Allowed Roles:
-// Admin
-// Receptionist
-// Trainer
 // ==========================
 router.get(
   "/",
@@ -34,15 +23,8 @@ router.get(
   getAllMembershipPlans
 );
 
-
 // ==========================
 // Get Single Membership Plan
-// GET /api/membership-plans/:id
-//
-// Allowed Roles:
-// Admin
-// Receptionist
-// Trainer
 // ==========================
 router.get(
   "/:id",
@@ -51,13 +33,8 @@ router.get(
   getSingleMembershipPlan
 );
 
-
 // ==========================
 // Create Membership Plan
-// POST /api/membership-plans
-//
-// Allowed Roles:
-// Admin
 // ==========================
 router.post(
   "/",
@@ -66,13 +43,8 @@ router.post(
   createMembershipPlan
 );
 
-
 // ==========================
 // Update Membership Plan
-// PUT /api/membership-plans/:id
-//
-// Allowed Roles:
-// Admin
 // ==========================
 router.put(
   "/:id",
@@ -81,13 +53,8 @@ router.put(
   updateMembershipPlan
 );
 
-
 // ==========================
 // Delete Membership Plan
-// DELETE /api/membership-plans/:id
-//
-// Allowed Roles:
-// Admin
 // ==========================
 router.delete(
   "/:id",
@@ -96,6 +63,4 @@ router.delete(
   deleteMembershipPlan
 );
 
-
-// Export Router
 module.exports = router;

@@ -13,12 +13,20 @@ const dotenv = require("dotenv");
 // Import Database Connection
 const connectDB = require("./config/db");
 
+
+
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const membershipPlanRoutes = require("./routes/membershipPlanRoutes");
 const membershipReminderRoutes = require("./routes/membershipReminderRoutes");
 const staffRoutes = require("./routes/staffRoutes");
+
+// Import Gym Routes
+const gymRoutes = require("./routes/gymRoutes");
+
+// Import Gym Administrator Routes
+const gymAdminRoutes = require("./routes/gymAdminRoutes");
 
 // Load .env file
 dotenv.config();
@@ -34,9 +42,12 @@ const app = express();
 // ---------------------
 
 // Enable CORS
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin:
+      process.env.CORS_ORIGIN ||
+      "http://localhost:3000",
     credentials: true,
   })
 );
@@ -50,6 +61,15 @@ app.use(express.json());
 
 // Authentication Routes
 app.use("/api/auth", authRoutes);
+
+// Gym Routes
+app.use("/api/gyms", gymRoutes);
+
+// Gym Administrator Routes
+app.use(
+  "/api/gym-admins",
+  gymAdminRoutes
+);
 
 // Member Routes
 app.use("/api/members", memberRoutes);

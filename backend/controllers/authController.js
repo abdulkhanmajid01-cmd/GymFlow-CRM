@@ -1,7 +1,11 @@
+// ==========================
+// Authentication Controller
+// ==========================
+
 // Import Async Handler
 const asyncHandler = require("../middleware/asyncHandler");
 
-// Import bcrypt for password hashing
+// Import bcrypt
 const bcrypt = require("bcryptjs");
 
 // Import User Model
@@ -13,135 +17,144 @@ const checkEmailExists = require("../utils/checkEmailExists");
 // Import JWT Generator
 const generateToken = require("../utils/generateToken");
 
+
 // ==========================
 // Register New User
 // ==========================
-const registerUser = asyncHandler(async (req, res) => {
+//
+// Public registration is disabled.
+//
+// Users must be created through:
+// Super Admin → Create Gym → Gym Admin
+//
+// Gym Admin → Create Staff
+// ==========================
 
-  // Get data from request body
-  const { fullName, email, password } = req.body;
-
-  // Normalize role
-  const role = (req.body.role || "").trim().toLowerCase();
-
-  // Allowed Roles
-  const allowedRoles = ["admin", "receptionist", "trainer"];
-
-  // Validate Role
-  if (!allowedRoles.includes(role)) {
-    return res.status(400).json({
+const registerUser = asyncHandler(
+  async (req, res) => {
+    return res.status(403).json({
       success: false,
-      message: `Invalid role. Allowed roles are: ${allowedRoles.join(", ")}`,
+      message:
+        "Public registration is disabled. Users must be created by an authorized administrator.",
     });
   }
+);
 
-  // Check if email already exists in the entire system
-  const emailExists = await checkEmailExists({
-    email,
-  });
-
-  // Stop registration if email already exists
-  if (emailExists) {
-    return res.status(409).json({
-      success: false,
-      message: "Email already exists in the system",
-    });
-  }
-
-  // Hash password before saving into database
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Create new user
-  const newUser = await User.create({
-    fullName,
-    email,
-    password: hashedPassword,
-    role,
-  });
-
-  // Registration Success Response
-  res.status(201).json({
-    success: true,
-    message: "User registered successfully",
-    data: {
-      id: newUser._id,
-      fullName: newUser.fullName,
-      email: newUser.email,
-      role: newUser.role,
-    },
-  });
-
-});
 
 // ==========================
 // Login User
 // ==========================
-const loginUser = asyncHandler(async (req, res) => {
 
-  // Get email & password from request body
-  const { email, password } = req.body;
+const loginUser = asyncHandler(
+  async (req, res) => {
 
-  // Find user by email
-  const user = await User.findOne({ email });
+    // Get email and password
+    const {
+      email,
+      password,
+    } = req.body;
 
-  // User not found
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid email or password",
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Email and password are required.",
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({
+      email: email.trim().toLowerCase(),
+    });
+
+    // User not found
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Invalid email or password.",
+      });
+    }
+
+    // Check account status
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Your account has been deactivated.",
+      });
+    }
+
+    // Compare password
+    const isPasswordMatched =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
+
+    // Wrong password
+    if (!isPasswordMatched) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Invalid email or password.",
+      });
+    }
+
+    // Generate JWT
+    const token = generateToken(
+      user._id,
+      user.role
+    );
+
+    // Login successful
+    return res.status(200).json({
+      success: true,
+      message: "Login successful.",
+
+      token,
+
+      data: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        gymId: user.gymId,
+      },
     });
   }
+);
 
-  // Compare entered password with hashed password
-  const isPasswordMatched = await bcrypt.compare(
-    password,
-    user.password
-  );
-
-  // Wrong password
-  if (!isPasswordMatched) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid email or password",
-    });
-  }
-
-  // Generate JWT Token
-  const token = generateToken(user._id, user.role);
-
-  // Success Response
-  res.status(200).json({
-    success: true,
-    message: "Login successful",
-    token,
-    data: {
-      id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-    },
-  });
-
-});
 
 // ==========================
 // Get All Users
 // ==========================
-const getAllUsers = asyncHandler(async (req, res) => {
+//
+// Temporary admin endpoint.
+// Later we will add proper
+// gym-level isolation.
+// ==========================
 
-  // Get all users except password
-  const users = await User.find().select("-password");
+const getAllUsers = asyncHandler(
+  async (req, res) => {
 
-  // Success Response
-  res.status(200).json({
-    success: true,
-    count: users.length,
-    data: users,
-  });
+    const users = await User.find()
+      .select("-password");
 
-});
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users,
+    });
+  }
+);
 
+
+// ==========================
 // Export Controllers
+// ==========================
+
 module.exports = {
   registerUser,
   loginUser,

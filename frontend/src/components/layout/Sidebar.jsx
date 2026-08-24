@@ -13,6 +13,7 @@ import {
   LogOut,
   Dumbbell,
   UserCog,
+  Building2,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -21,39 +22,104 @@ export default function Sidebar() {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  const role = user?.role?.toLowerCase() || "receptionist";
+  const role =
+    user?.role?.toLowerCase() || "receptionist";
+
+  // ==========================
+  // Navigation Items
+  // ==========================
 
   const menuItems = [
+    // ==========================
+    // Gym Dashboard
+    // ==========================
     {
       name: "Dashboard",
       href: "/dashboard",
       icon: LayoutDashboard,
-      roles: ["admin", "receptionist", "trainer"],
+      roles: [
+        "admin",
+        "receptionist",
+        "trainer",
+      ],
     },
+
+    // ==========================
+    // Super Admin Dashboard
+    // ==========================
+    {
+      name: "Super Admin Dashboard",
+      href: "/super-admin",
+      icon: LayoutDashboard,
+      roles: ["superadmin"],
+    },
+
+    // ==========================
+    // Gyms
+    // ==========================
+    {
+      name: "Gyms",
+      href: "/super-admin/gyms",
+      icon: Building2,
+      roles: ["superadmin"],
+    },
+
+    
+
+    // ==========================
+    // Members
+    // ==========================
     {
       name: "Members",
       href: "/members",
       icon: Users,
-      roles: ["admin", "receptionist", "trainer"],
+      roles: [
+        "admin",
+        "receptionist",
+        "trainer",
+      ],
     },
+
+    // ==========================
+    // Membership Plans
+    // ==========================
     {
       name: "Membership Plans",
       href: "/membership-plans",
       icon: CreditCard,
       roles: ["admin"],
     },
+
+    // ==========================
+    // Attendance
+    // ==========================
     {
       name: "Attendance",
       href: "/attendance",
       icon: CalendarCheck,
-      roles: ["admin", "receptionist", "trainer"],
+      roles: [
+        "admin",
+        "receptionist",
+        "trainer",
+      ],
     },
+
+    // ==========================
+    // Payments
+    // ==========================
     {
       name: "Payments",
       href: "/payments",
       icon: Wallet,
-      roles: ["admin", "receptionist"],
+      roles: [
+        "admin",
+        "receptionist",
+      ],
     },
+
+    // ==========================
+    // Settings
+    // ==========================
     {
       name: "Settings",
       href: "/settings",
@@ -61,34 +127,74 @@ export default function Sidebar() {
       roles: ["admin"],
     },
 
+    // ==========================
+    // Staff Management
+    // ==========================
     {
-  name: "Staff Management",
-  href: "/staff",
-  icon: UserCog,
-  roles: ["admin"],
-},
+      name: "Staff Management",
+      href: "/staff",
+      icon: UserCog,
+      roles: ["admin"],
+    },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) =>
-    item.roles.includes(role)
-  );
+  // ==========================
+  // Visible Menu Items
+  // ==========================
+
+  const visibleMenuItems =
+    menuItems.filter((item) =>
+      item.roles.includes(role)
+    );
+
+  // ==========================
+  // Role Name
+  // ==========================
 
   const getRoleName = () => {
-    if (role === "admin") return "Gym Admin";
-    if (role === "receptionist") return "Receptionist";
-    if (role === "trainer") return "Trainer";
+    if (role === "superadmin") {
+      return "Super Admin";
+    }
+
+    if (role === "admin") {
+      return "Gym Admin";
+    }
+
+    if (role === "receptionist") {
+      return "Receptionist";
+    }
+
+    if (role === "trainer") {
+      return "Trainer";
+    }
 
     return "Staff";
   };
 
+  // ==========================
+  // User Initial
+  // ==========================
+
   const getInitial = () => {
-    return user?.fullName?.charAt(0)?.toUpperCase() || "U";
+    return (
+      user?.fullName
+        ?.charAt(0)
+        ?.toUpperCase() || "U"
+    );
   };
+
+  // ==========================
+  // Logout
+  // ==========================
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
+
+  // ==========================
+  // Render
+  // ==========================
 
   return (
     <aside className="w-72 h-screen bg-slate-900 text-white flex flex-col shadow-xl">
@@ -127,7 +233,9 @@ export default function Sidebar() {
 
           const isActive =
             pathname === item.href ||
-            pathname.startsWith(`${item.href}/`);
+            pathname.startsWith(
+              `${item.href}/`
+            );
 
           return (
             <Link
@@ -140,6 +248,7 @@ export default function Sidebar() {
               }`}
             >
               <Icon size={20} />
+
               {item.name}
             </Link>
           );
@@ -173,7 +282,9 @@ export default function Sidebar() {
 
         </div>
 
-        {/* Logout */}
+        {/* ==========================
+            Logout
+        ========================== */}
 
         <button
           type="button"
@@ -181,6 +292,7 @@ export default function Sidebar() {
           className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition py-3 rounded-xl"
         >
           <LogOut size={18} />
+
           Logout
         </button>
 

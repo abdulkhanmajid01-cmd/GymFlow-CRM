@@ -30,39 +30,67 @@ export default function DashboardLayout({ children }) {
     // ==========================
 
     const pagePermissions = {
+      // ==========================
+      // Gym Dashboard
+      // ==========================
       "/dashboard": [
         "admin",
         "receptionist",
         "trainer",
       ],
 
+      // ==========================
+      // Super Admin Dashboard
+      // ==========================
+      "/super-admin": [
+        "superadmin",
+      ],
+
+      // ==========================
+      // Members
+      // ==========================
       "/members": [
         "admin",
         "receptionist",
         "trainer",
       ],
 
+      // ==========================
+      // Membership Plans
+      // ==========================
       "/membership-plans": [
         "admin",
       ],
 
+      // ==========================
+      // Attendance
+      // ==========================
       "/attendance": [
         "admin",
         "receptionist",
         "trainer",
       ],
 
+      // ==========================
+      // Payments
+      // ==========================
       "/payments": [
         "admin",
         "receptionist",
       ],
 
+      // ==========================
+      // Settings
+      // ==========================
       "/settings": [
         "admin",
       ],
     };
 
-    // Find matching protected page
+    // ==========================
+    // Find Matching Protected Page
+    // ==========================
+
     const matchedPage = Object.keys(
       pagePermissions
     ).find(
@@ -79,6 +107,14 @@ export default function DashboardLayout({ children }) {
       matchedPage &&
       !pagePermissions[matchedPage].includes(role)
     ) {
+      // Super Admin should return to
+      // Super Admin dashboard
+      if (role === "superadmin") {
+        router.replace("/super-admin");
+        return;
+      }
+
+      // Gym users return to normal dashboard
       router.replace("/dashboard");
     }
   }, [
@@ -109,6 +145,10 @@ export default function DashboardLayout({ children }) {
   if (!user) {
     return null;
   }
+
+  // ==========================
+  // Dashboard Layout
+  // ==========================
 
   return (
     <div className="flex min-h-screen bg-slate-100">
