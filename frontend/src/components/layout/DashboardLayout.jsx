@@ -8,7 +8,7 @@ import Navbar from "./Navbar";
 import { useAuth } from "../../context/AuthContext";
 
 export default function DashboardLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -23,7 +23,38 @@ export default function DashboardLayout({ children }) {
       return;
     }
 
+    // ==========================
+    // Check User Active Status
+    // ==========================
+    // If user was deactivated after login
+    // (JWT still valid), force logout.
+    // ==========================
+
+    if (user.isActive === false) {
+      logout();
+      router.replace("/login");
+      return;
+    }
+
+    // ==========================
+    // Check Gym Active Status
+    // ==========================
+    // Non-superAdmin users must belong to
+    // an active gym. gymIsActive is set at
+    // login time by the backend.
+    // ==========================
+
     const role = user.role?.toLowerCase();
+
+    if (
+      role !== "superadmin" &&
+      user.gymId &&
+      user.gymIsActive === false
+    ) {
+      logout();
+      router.replace("/login");
+      return;
+    }
 
     // ==========================
     // Role-Based Page Permissions
@@ -143,6 +174,29 @@ export default function DashboardLayout({ children }) {
   // ==========================
 
   if (!user) {
+    return null;
+  }
+
+  // ==========================
+  // Inactive User
+  // ==========================
+
+  if (user.isActive === false) {
+    return null;
+  }
+
+  // ==========================
+  // Inactive Gym
+  // ==========================
+
+  const renderRole =
+    user.role?.toLowerCase();
+
+  if (
+    renderRole !== "superadmin" &&
+    user.gymId &&
+    user.gymIsActive === false
+  ) {
     return null;
   }
 

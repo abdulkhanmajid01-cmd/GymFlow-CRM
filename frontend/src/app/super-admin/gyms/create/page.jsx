@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,8 +12,11 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { useAuth } from "../../../../context/AuthContext";
+
 export default function CreateGymPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,6 +31,21 @@ export default function CreateGymPage() {
     adminEmail: "",
     adminPassword: "",
   });
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   // ==========================
   // Handle Input Change
@@ -189,6 +207,18 @@ export default function CreateGymPage() {
       setLoading(false);
     }
   };
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  if (
+    authLoading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">

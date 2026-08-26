@@ -14,12 +14,13 @@ import {
   Dumbbell,
   UserCog,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
 
   const role =
@@ -64,7 +65,15 @@ export default function Sidebar() {
       roles: ["superadmin"],
     },
 
-    
+    // ==========================
+    // Platform Administration
+    // ==========================
+    {
+      name: "Platform Administration",
+      href: "/super-admin/platform-administration",
+      icon: ShieldCheck,
+      roles: ["superadmin"],
+    },
 
     // ==========================
     // Members
@@ -188,7 +197,7 @@ export default function Sidebar() {
   // ==========================
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     window.location.href = "/login";
   };
 

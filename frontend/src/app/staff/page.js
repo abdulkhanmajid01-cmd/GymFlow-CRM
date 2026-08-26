@@ -106,11 +106,12 @@ export default function StaffPage() {
         await createStaff(staffData);
       }
 
-      // Refresh staff list
-      await loadStaff();
-
-      // Close form
+      // Close form immediately
+      // for faster perceived response
       handleCloseForm();
+
+      // Refresh staff list in background
+      loadStaff();
     } catch (error) {
       console.error(
         "Failed to save staff:",

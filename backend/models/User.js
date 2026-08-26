@@ -82,4 +82,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// ==========================
+// Compound Index
+//
+// Supports frequent filters:
+//   { role } and { role, isActive }
+// used by platform statistics and
+// gym administrator queries.
+// ==========================
+
+userSchema.index({ role: 1, isActive: 1 });
+
 module.exports = mongoose.model("User", userSchema);

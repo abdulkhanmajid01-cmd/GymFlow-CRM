@@ -20,7 +20,6 @@ const memberSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
 
@@ -28,7 +27,6 @@ const memberSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
 
@@ -42,7 +40,6 @@ const memberSchema = new mongoose.Schema({
   cnic: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
 
@@ -50,7 +47,6 @@ const memberSchema = new mongoose.Schema({
   memberId: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
 
@@ -85,5 +81,32 @@ const memberSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+// ==========================
+// Gym-Scoped Uniqueness
+// Same value allowed across
+// different gyms, but NOT
+// inside the same gym.
+// ==========================
+
+memberSchema.index(
+  { gymId: 1, memberId: 1 },
+  { unique: true }
+);
+
+memberSchema.index(
+  { gymId: 1, cnic: 1 },
+  { unique: true }
+);
+
+memberSchema.index(
+  { gymId: 1, email: 1 },
+  { unique: true }
+);
+
+memberSchema.index(
+  { gymId: 1, phoneNumber: 1 },
+  { unique: true }
+);
 
 module.exports = mongoose.model("Member", memberSchema);

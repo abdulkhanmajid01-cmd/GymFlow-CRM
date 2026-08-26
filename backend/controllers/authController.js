@@ -6,13 +6,16 @@
 const asyncHandler = require("../middleware/asyncHandler");
 
 // Import bcrypt
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 // Import User Model
 const User = require("../models/User");
 
 // Import Helper
 const checkEmailExists = require("../utils/checkEmailExists");
+
+// Import Gym Model
+const Gym = require("../models/Gym");
 
 // Import JWT Generator
 const generateToken = require("../utils/generateToken");
@@ -86,6 +89,30 @@ const loginUser = asyncHandler(
       });
     }
 
+    // ==========================
+    // Check Gym Active Status
+    // ==========================
+    // Non-superAdmin users must belong to
+    // an active gym to log in.
+    // ==========================
+
+    let gym = null;
+
+    if (
+      user.role !== "superAdmin" &&
+      user.gymId
+    ) {
+      gym = await Gym.findById(user.gymId);
+
+      if (!gym || !gym.isActive) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Your gym is currently inactive. Please contact support.",
+        });
+      }
+    }
+
     // Compare password
     const isPasswordMatched =
       await bcrypt.compare(
@@ -108,6 +135,30 @@ const loginUser = asyncHandler(
       user.role
     );
 
+    // ==========================
+    // Build Response Data
+    // ==========================
+
+    const responseData = {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      gymId: user.gymId,
+    };
+
+    // Include gym active status for
+    // non-superAdmin users so the frontend
+    // can enforce gym-active guards.
+
+    if (
+      user.role !== "superAdmin" &&
+      user.gymId
+    ) {
+      responseData.gymIsActive =
+        gym ? gym.isActive : false;
+    }
+
     // Login successful
     return res.status(200).json({
       success: true,
@@ -115,13 +166,7 @@ const loginUser = asyncHandler(
 
       token,
 
-      data: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        gymId: user.gymId,
-      },
+      data: responseData,
     });
   }
 );
@@ -139,7 +184,17 @@ const loginUser = asyncHandler(
 const getAllUsers = asyncHandler(
   async (req, res) => {
 
-    const users = await User.find()
+    const filter = {};
+
+    // Non-superAdmin users see only their gym's users
+    if (
+      req.user.role !== "superAdmin" &&
+      req.user.gymId
+    ) {
+      filter.gymId = req.user.gymId;
+    }
+
+    const users = await User.find(filter)
       .select("-password");
 
     return res.status(200).json({

@@ -1,5 +1,5 @@
 const asyncHandler = require("../middleware/asyncHandler");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const User = require("../models/User");
 const checkEmailExists = require("../utils/checkEmailExists");
@@ -40,6 +40,7 @@ const createStaff = asyncHandler(async (req, res) => {
   // Check email
   const emailExists = await checkEmailExists({
     email,
+    gymId: req.user.gymId,
   });
 
   if (emailExists) {
@@ -61,6 +62,7 @@ const createStaff = asyncHandler(async (req, res) => {
     email,
     password: hashedPassword,
     role: normalizedRole,
+    gymId: req.user.gymId,
     isActive: true,
 
     // Store the Admin who created this staff account
@@ -115,6 +117,7 @@ const getAllTrainers = asyncHandler(async (req, res) => {
   const trainers = await User.find({
     role: "trainer",
     isActive: true,
+    gymId: req.user.gymId,
   })
     .select("_id fullName email role")
     .sort({
@@ -142,9 +145,10 @@ const updateStaff = asyncHandler(async (req, res) => {
     isActive,
   } = req.body;
 
-  const staff = await User.findById(
-    req.params.id
-  );
+  const staff = await User.findOne({
+    _id: req.params.id,
+    gymId: req.user.gymId,
+  });
 
   if (!staff) {
     return res.status(404).json({
@@ -203,6 +207,7 @@ const updateStaff = asyncHandler(async (req, res) => {
     const emailExists =
       await checkEmailExists({
         email,
+        gymId: req.user.gymId,
         excludeUserId: staff._id,
       });
 
@@ -251,9 +256,10 @@ const updateStaff = asyncHandler(async (req, res) => {
 // Admin Only
 // ==========================
 const deleteStaff = asyncHandler(async (req, res) => {
-  const staff = await User.findById(
-    req.params.id
-  );
+  const staff = await User.findOne({
+    _id: req.params.id,
+    gymId: req.user.gymId,
+  });
 
   if (!staff) {
     return res.status(404).json({
@@ -284,9 +290,10 @@ const deleteStaff = asyncHandler(async (req, res) => {
     });
   }
 
-  await User.findByIdAndDelete(
-    req.params.id
-  );
+  await User.findOneAndDelete({
+    _id: req.params.id,
+    gymId: req.user.gymId,
+  });
 
   res.status(200).json({
     success: true,

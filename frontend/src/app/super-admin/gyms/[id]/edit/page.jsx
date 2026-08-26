@@ -12,9 +12,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { useAuth } from "../../../../../context/AuthContext";
+
 export default function EditGymPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const gymId = params.id;
 
@@ -30,6 +33,21 @@ export default function EditGymPage() {
     phoneNumber: "",
     address: "",
   });
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   // ==========================
   // Fetch Existing Gym
@@ -184,6 +202,18 @@ setFormData({
       setSaving(false);
     }
   };
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  if (
+    authLoading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   // ==========================
   // Loading

@@ -21,10 +21,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Login UI State
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   // Login Function
   const handleLogin = async (e) => {
     // Prevent Page Refresh
     e.preventDefault();
+
+    // Clear previous errors
+    setError("");
+    setLoading(true);
 
     try {
       // Send Login Request To Backend
@@ -32,9 +40,6 @@ export default function LoginPage() {
         email,
         password
       );
-
-      // Check Backend Response
-      console.log(response);
 
       // ==========================
       // Save JWT Token
@@ -50,12 +55,6 @@ export default function LoginPage() {
       // ==========================
 
       setUser(response.data);
-
-      console.log("✅ Login Successful");
-      console.log(
-        "👤 User Role:",
-        response.data?.role
-      );
 
       // ==========================
       // Role-Based Redirect
@@ -106,25 +105,20 @@ export default function LoginPage() {
       // Invalid Role
       // ==========================
 
-      console.error(
-        "❌ Invalid user role:",
-        role
-      );
-
       // Remove authentication data
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
       setUser(null);
 
-      throw new Error(
-        "Invalid user role."
+      setError("Invalid user role. Please try again.");
+    } catch (err) {
+      setError(
+        err?.message ||
+          "Login failed. Please try again."
       );
-    } catch (error) {
-      console.error(
-        "❌ Login Failed:",
-        error
-      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,6 +135,15 @@ export default function LoginPage() {
           className="space-y-5"
         >
 
+          {/* Error Banner */}
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <span className="text-base">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Email */}
 
           <div>
@@ -153,9 +156,10 @@ export default function LoginPage() {
               placeholder="Enter your email"
               className="w-full border rounded-lg px-4 py-3"
               value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
               required
             />
           </div>
@@ -172,9 +176,10 @@ export default function LoginPage() {
               placeholder="Enter your password"
               className="w-full border rounded-lg px-4 py-3"
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError("");
+              }}
               required
             />
           </div>
@@ -183,9 +188,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
         </form>

@@ -13,9 +13,10 @@ const dotenv = require("dotenv");
 // Import Database Connection
 const connectDB = require("./config/db");
 
-
-
+// ==========================
 // Import Routes
+// ==========================
+
 const authRoutes = require("./routes/authRoutes");
 const memberRoutes = require("./routes/memberRoutes");
 const membershipPlanRoutes = require("./routes/membershipPlanRoutes");
@@ -28,21 +29,32 @@ const gymRoutes = require("./routes/gymRoutes");
 // Import Gym Administrator Routes
 const gymAdminRoutes = require("./routes/gymAdminRoutes");
 
+// Import Platform Administration Routes
+const platformRoutes = require("./routes/platformRoutes");
+
+// ==========================
 // Load .env file
+// ==========================
+
 dotenv.config();
 
+// ==========================
 // Connect MongoDB Database
+// ==========================
+
 connectDB();
 
+// ==========================
 // Create Express Application
+// ==========================
+
 const app = express();
 
-// ---------------------
+// ==========================
 // Middlewares
-// ---------------------
+// ==========================
 
 // Enable CORS
-
 app.use(
   cors({
     origin:
@@ -55,9 +67,9 @@ app.use(
 // Parse Incoming JSON Data
 app.use(express.json());
 
-// ---------------------
+// ==========================
 // Routes
-// ---------------------
+// ==========================
 
 // Authentication Routes
 app.use("/api/auth", authRoutes);
@@ -69,6 +81,12 @@ app.use("/api/gyms", gymRoutes);
 app.use(
   "/api/gym-admins",
   gymAdminRoutes
+);
+
+// Platform Administration Routes
+app.use(
+  "/api/platform",
+  platformRoutes
 );
 
 // Member Routes
@@ -92,9 +110,9 @@ app.use(
   staffRoutes
 );
 
-// ---------------------
+// ==========================
 // Test Route
-// ---------------------
+// ==========================
 
 app.get("/", (req, res) => {
   res.send(
@@ -102,15 +120,15 @@ app.get("/", (req, res) => {
   );
 });
 
-// ---------------------
+// ==========================
 // Global Error Handler
-// ---------------------
+// ==========================
 
 app.use(errorHandler);
 
-// ---------------------
+// ==========================
 // Start Server
-// ---------------------
+// ==========================
 
 const PORT = process.env.PORT || 5000;
 

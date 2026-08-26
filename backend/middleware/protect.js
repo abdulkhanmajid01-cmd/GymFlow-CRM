@@ -7,6 +7,9 @@ const asyncHandler = require("./asyncHandler");
 // Import User Model
 const User = require("../models/User");
 
+// Import Gym Model
+const Gym = require("../models/Gym");
+
 // ==========================
 // Protect Middleware
 // ==========================
@@ -63,6 +66,28 @@ const protect = asyncHandler(async (req, res, next) => {
           success: false,
           message: "User account is inactive",
         });
+      }
+
+      // ==========================
+      // Check Gym Active Status
+      // ==========================
+      // Non-superAdmin users must belong to
+      // an active gym to access any endpoint.
+      // ==========================
+
+      if (
+        user.role !== "superAdmin" &&
+        user.gymId
+      ) {
+        const gym = await Gym.findById(user.gymId);
+
+        if (!gym || !gym.isActive) {
+          return res.status(401).json({
+            success: false,
+            message:
+              "Your gym is currently inactive. Please contact support.",
+          });
+        }
       }
 
       // ==========================

@@ -96,13 +96,77 @@ const createMember = async (req, res, next) => {
     const emailExists =
       await checkEmailExists({
         email,
+        gymId,
       });
 
     if (emailExists) {
       return res.status(409).json({
         success: false,
         message:
-          "Email already exists in the system",
+          "Email already exists in this gym",
+      });
+    }
+
+    // ==========================
+    // Check Member ID
+    // Same Gym Only
+    // ==========================
+
+    const {
+      memberId,
+      cnic,
+      phoneNumber,
+    } = req.body;
+
+    const memberIdExists =
+      await Member.findOne({
+        memberId,
+        gymId,
+      });
+
+    if (memberIdExists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Member ID already exists in this gym",
+      });
+    }
+
+    // ==========================
+    // Check CNIC
+    // Same Gym Only
+    // ==========================
+
+    const cnicExists =
+      await Member.findOne({
+        cnic,
+        gymId,
+      });
+
+    if (cnicExists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "CNIC already exists in this gym",
+      });
+    }
+
+    // ==========================
+    // Check Phone Number
+    // Same Gym Only
+    // ==========================
+
+    const phoneExists =
+      await Member.findOne({
+        phoneNumber,
+        gymId,
+      });
+
+    if (phoneExists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Phone number already exists in this gym",
       });
     }
 
@@ -349,6 +413,7 @@ const updateMember = async (
 
     // ==========================
     // Check Email
+    // Same Gym Only
     // ==========================
 
     if (
@@ -359,6 +424,7 @@ const updateMember = async (
       const emailExists =
         await checkEmailExists({
           email: req.body.email,
+          gymId,
           excludeMemberId:
             req.params.id,
         });
@@ -367,7 +433,86 @@ const updateMember = async (
         return res.status(409).json({
           success: false,
           message:
-            "Email already exists in the system",
+            "Email already exists in this gym",
+        });
+      }
+    }
+
+    // ==========================
+    // Check Member ID
+    // Same Gym Only
+    // ==========================
+
+    if (
+      req.body.memberId &&
+      req.body.memberId !==
+        currentMember.memberId
+    ) {
+      const memberIdExists =
+        await Member.findOne({
+          memberId: req.body.memberId,
+          gymId,
+          _id: { $ne: req.params.id },
+        });
+
+      if (memberIdExists) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Member ID already exists in this gym",
+        });
+      }
+    }
+
+    // ==========================
+    // Check CNIC
+    // Same Gym Only
+    // ==========================
+
+    if (
+      req.body.cnic &&
+      req.body.cnic !==
+        currentMember.cnic
+    ) {
+      const cnicExists =
+        await Member.findOne({
+          cnic: req.body.cnic,
+          gymId,
+          _id: { $ne: req.params.id },
+        });
+
+      if (cnicExists) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "CNIC already exists in this gym",
+        });
+      }
+    }
+
+    // ==========================
+    // Check Phone Number
+    // Same Gym Only
+    // ==========================
+
+    if (
+      req.body.phoneNumber &&
+      req.body.phoneNumber !==
+        currentMember.phoneNumber
+    ) {
+      const phoneExists =
+        await Member.findOne({
+          phoneNumber:
+            req.body.phoneNumber,
+          gymId,
+          _id: { $ne: req.params.id },
+        });
+
+      if (phoneExists) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "Phone number already exists in this gym",
         });
       }
     }

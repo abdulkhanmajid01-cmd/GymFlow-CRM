@@ -13,12 +13,30 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import { useAuth } from "../../../context/AuthContext";
+
 export default function GymsPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const [gyms, setGyms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   // ==========================
   // Fetch Gyms
@@ -120,6 +138,18 @@ export default function GymsPage() {
   const inactiveGyms = gyms.filter(
     (gym) => gym.isActive !== true
   ).length;
+
+  // ==========================
+  // Loading Auth / Unauthorized
+  // ==========================
+
+  if (
+    authLoading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   return (
     <div className="space-y-8">

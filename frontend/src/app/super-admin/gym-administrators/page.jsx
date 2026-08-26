@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   ShieldCheck,
   Building2,
+  Calendar,
   Mail,
   User,
   ArrowLeft,
@@ -21,7 +23,11 @@ import {
   toggleGymAdminStatus,
 } from "@/services/gymAdminService";
 
+import { useAuth } from "../../../context/AuthContext";
+
 export default function GymAdministratorsPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [admins, setAdmins] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -32,6 +38,21 @@ export default function GymAdministratorsPage() {
   const [error, setError] = useState("");
 
   const [success, setSuccess] = useState("");
+
+  // ==========================================
+  // Auth Guard
+  // ==========================================
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   // ==========================================
   // Fetch Gym Administrators
@@ -132,6 +153,18 @@ export default function GymAdministratorsPage() {
   useEffect(() => {
     fetchAdministrators();
   }, []);
+
+  // ==========================================
+  // Auth Guard
+  // ==========================================
+
+  if (
+    authLoading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   // ==========================================
   // Loading
@@ -254,7 +287,7 @@ export default function GymAdministratorsPage() {
       ======================================== */}
 
       {!error && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
 
           {/* Total */}
 
@@ -283,6 +316,25 @@ export default function GymAdministratorsPage() {
                 admins.filter(
                   (admin) =>
                     admin.isActive !== false
+                ).length
+              }
+            </p>
+
+          </div>
+
+          {/* Inactive */}
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+            <p className="text-sm text-slate-500">
+              Inactive Administrators
+            </p>
+
+            <p className="text-3xl font-bold text-red-600 mt-2">
+              {
+                admins.filter(
+                  (admin) =>
+                    admin.isActive === false
                 ).length
               }
             </p>
@@ -395,6 +447,16 @@ export default function GymAdministratorsPage() {
                         </div>
                       )}
 
+                      <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                        <Calendar size={15} />
+
+                        {admin.createdAt
+                          ? new Date(
+                              admin.createdAt
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </div>
+
                     </div>
 
                   </div>
@@ -417,6 +479,20 @@ export default function GymAdministratorsPage() {
                         {admin.gymId?.name ||
                           "Not assigned"}
                       </p>
+
+                      {admin.gymId && (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium mt-1 ${
+                            admin.gymId.isActive
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {admin.gymId.isActive
+                            ? "Gym Active"
+                            : "Gym Inactive"}
+                        </span>
+                      )}
 
                     </div>
 

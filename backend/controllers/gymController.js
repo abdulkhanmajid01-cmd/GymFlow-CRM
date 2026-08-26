@@ -2,7 +2,7 @@
 const asyncHandler = require("../middleware/asyncHandler");
 
 // Import bcrypt for password hashing
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 // Import Gym Model
 const Gym = require("../models/Gym");
@@ -327,6 +327,37 @@ const toggleGymStatus = asyncHandler(
     // Return fresh saved document
     const updatedGym = await Gym.findById(
       gym._id
+    );
+
+    // ==========================
+    // Synchronize Gym Administrators
+    //
+    // Gym status controls admin status:
+    //
+    // Gym deactivated
+    // -> ALL admins of this gym become inactive
+    //
+    // Gym activated
+    // -> ALL admins of this gym become active
+    //
+    // Only users with:
+    //   role = "admin"
+    //   gymId = this gym
+    // are modified.
+    //
+    // Receptionists and trainers are NOT touched.
+    // ==========================
+
+    await User.updateMany(
+      {
+        gymId: gym._id,
+        role: "admin",
+      },
+      {
+        $set: {
+          isActive: updatedGym.isActive,
+        },
+      }
     );
 
     res.status(200).json({

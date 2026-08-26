@@ -31,19 +31,31 @@ const checkEmailExists = async ({
     email.toLowerCase().trim();
 
   // ==========================
+  // Check Both Collections
+  // Concurrently for Speed
+  // ==========================
+
+  const [existingUser, existingMember] =
+    await Promise.all([
+      User.findOne({
+        email: normalizedEmail,
+        gymId,
+      }),
+      Member.findOne({
+        email: normalizedEmail,
+        gymId,
+      }),
+    ]);
+
+  // ==========================
   // Check Users Collection
   // ==========================
 
-  const user = await User.findOne({
-    email: normalizedEmail,
-    gymId,
-  });
-
-  if (user) {
+  if (existingUser) {
     // Ignore current user while updating
     if (
       !excludeUserId ||
-      user._id.toString() !==
+      existingUser._id.toString() !==
         excludeUserId.toString()
     ) {
       return true;
@@ -54,16 +66,11 @@ const checkEmailExists = async ({
   // Check Members Collection
   // ==========================
 
-  const member = await Member.findOne({
-    email: normalizedEmail,
-    gymId,
-  });
-
-  if (member) {
+  if (existingMember) {
     // Ignore current member while updating
     if (
       !excludeMemberId ||
-      member._id.toString() !==
+      existingMember._id.toString() !==
         excludeMemberId.toString()
     ) {
       return true;

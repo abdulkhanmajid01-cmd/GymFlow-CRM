@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -14,10 +15,33 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import { useAuth } from "../../context/AuthContext";
+
 export default function SuperAdminDashboard() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
   const [gyms, setGyms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState("");
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+  // Redirect if not authenticated or
+  // not a superAdmin.
+  // ==========================
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
 
   // ==========================
   // Fetch Gyms
@@ -25,7 +49,7 @@ export default function SuperAdminDashboard() {
 
   const fetchGyms = async () => {
     try {
-      setLoading(true);
+      setLoadingData(true);
       setError("");
 
       const token = localStorage.getItem("token");
@@ -61,7 +85,7 @@ export default function SuperAdminDashboard() {
         err.message || "Unable to load gym data."
       );
     } finally {
-      setLoading(false);
+      setLoadingData(false);
     }
   };
 
@@ -86,6 +110,18 @@ export default function SuperAdminDashboard() {
   const inactiveGyms = gyms.filter(
     (gym) => !gym.isActive
   ).length;
+
+  // ==========================
+  // Loading Auth / Unauthorized
+  // ==========================
+
+  if (
+    loading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   return (
     <div className="space-y-8">
@@ -189,7 +225,7 @@ export default function SuperAdminDashboard() {
             </p>
 
             <h2 className="text-3xl font-bold text-slate-900 mt-1">
-              {loading ? "..." : totalGyms}
+              {loadingData ? "..." : totalGyms}
             </h2>
 
           </div>
@@ -219,7 +255,7 @@ export default function SuperAdminDashboard() {
             </p>
 
             <h2 className="text-3xl font-bold text-slate-900 mt-1">
-              {loading ? "..." : activeGyms}
+              {loadingData ? "..." : activeGyms}
             </h2>
 
           </div>
@@ -249,7 +285,7 @@ export default function SuperAdminDashboard() {
             </p>
 
             <h2 className="text-3xl font-bold text-slate-900 mt-1">
-              {loading ? "..." : inactiveGyms}
+              {loadingData ? "..." : inactiveGyms}
             </h2>
 
           </div>
@@ -339,7 +375,18 @@ export default function SuperAdminDashboard() {
           Platform Administration
       ========================== */}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <Link
+        href="/super-admin/platform-administration"
+        className="block bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:border-slate-300 hover:shadow-md transition cursor-pointer"
+        onClick={(e) => {
+          const target = e.target.closest("button, a");
+
+          if (target && target !== e.currentTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
 
         <div className="flex items-center gap-3">
 
@@ -366,7 +413,7 @@ export default function SuperAdminDashboard() {
           <div>
 
             <p className="text-sm text-slate-500">
-              {loading
+              {loadingData
                 ? "Loading platform data..."
                 : `GymFlow currently has ${totalGyms} registered ${
                     totalGyms === 1 ? "gym" : "gyms"
@@ -379,14 +426,17 @@ export default function SuperAdminDashboard() {
 
             <button
               type="button"
-              onClick={fetchGyms}
-              disabled={loading}
+              onClick={(e) => {
+                e.stopPropagation();
+                fetchGyms();
+              }}
+              disabled={loadingData}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition disabled:opacity-50"
             >
               <RefreshCw
                 size={16}
                 className={
-                  loading
+                  loadingData
                     ? "animate-spin"
                     : ""
                 }
@@ -394,19 +444,23 @@ export default function SuperAdminDashboard() {
               Refresh
             </button>
 
-            <Link
-              href="/super-admin/gyms"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push("/super-admin/gyms");
+              }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
             >
               Manage Gyms
               <ArrowRight size={16} />
-            </Link>
+            </button>
 
           </div>
 
         </div>
 
-      </div>
+      </Link>
 
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -18,8 +18,12 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { useAuth } from "../../../../context/AuthContext";
+
 export default function GymDetailsPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const gymId = params?.id;
 
@@ -29,6 +33,21 @@ export default function GymDetailsPage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (
+      !user ||
+      user.role?.toLowerCase() !== "superadmin"
+    ) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   // ==========================
   // Fetch Gym Details
@@ -242,6 +261,18 @@ setGym(gymData);
       setActionLoading(false);
     }
   };
+
+  // ==========================
+  // Auth Guard
+  // ==========================
+
+  if (
+    authLoading ||
+    !user ||
+    user.role?.toLowerCase() !== "superadmin"
+  ) {
+    return null;
+  }
 
   // ==========================
   // Loading State
