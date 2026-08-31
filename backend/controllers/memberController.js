@@ -1,11 +1,19 @@
 // Import Member Model
 const Member = require("../models/Member");
 
+// Import User Model
+const User = require("../models/User");
+
 // Import Membership Plan Model
 const MembershipPlan = require("../models/MembershipPlan");
 
 // Import Helper
 const checkEmailExists = require("../utils/checkEmailExists");
+
+// Import Shared Date Helper
+const {
+  createDateFromDateString,
+} = require("../utils/dateUtils");
 
 // ==========================
 // Date Helpers
@@ -18,24 +26,6 @@ const getPakistanDateString = () => {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-};
-
-const createDateFromDateString = (dateString) => {
-  const [year, month, day] = dateString
-    .split("-")
-    .map(Number);
-
-  return new Date(
-    Date.UTC(
-      year,
-      month - 1,
-      day,
-      12,
-      0,
-      0,
-      0
-    )
-  );
 };
 
 const addMonthsToDate = (date, months) => {
@@ -190,6 +180,33 @@ const createMember = async (req, res, next) => {
     }
 
     // ==========================
+    // Validate Assigned Trainer
+    // Must Be An Active Trainer
+    // Inside The Same Gym
+    // ==========================
+
+    const assignedTrainer =
+      req.body.assignedTrainer;
+
+    if (assignedTrainer) {
+      const trainer =
+        await User.findOne({
+          _id: assignedTrainer,
+          role: "trainer",
+          isActive: true,
+          gymId,
+        });
+
+      if (!trainer) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Assigned trainer not found in this gym",
+        });
+      }
+    }
+
+    // ==========================
     // Joining Date
     // ==========================
 
@@ -201,6 +218,14 @@ const createMember = async (req, res, next) => {
       createDateFromDateString(
         dateString
       );
+
+    if (!startDate) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid joining date.",
+      });
+    }
 
     // ==========================
     // Calculate Expiry Date
@@ -534,6 +559,42 @@ const updateMember = async (
     updateData.gymId = gymId;
 
     // ==========================
+    // Validate Assigned Trainer
+    // Must Be An Active Trainer
+    // Inside The Same Gym
+    // ==========================
+
+    if (
+      req.body.assignedTrainer !== undefined
+    ) {
+      const assignedTrainer =
+        req.body.assignedTrainer;
+
+      if (assignedTrainer) {
+        const trainer =
+          await User.findOne({
+            _id: assignedTrainer,
+            role: "trainer",
+            isActive: true,
+            gymId,
+          });
+
+        if (!trainer) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Assigned trainer not found in this gym",
+          });
+        }
+      }
+
+      // Normalize empty value to null so a
+      // member can be unassigned cleanly.
+      updateData.assignedTrainer =
+        assignedTrainer || null;
+    }
+
+    // ==========================
     // Check Membership Changes
     // ==========================
 
@@ -594,6 +655,14 @@ const updateMember = async (
         createDateFromDateString(
           dateString
         );
+
+      if (!startDate) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid joining date.",
+        });
+      }
 
       const expiryDate =
         addMonthsToDate(

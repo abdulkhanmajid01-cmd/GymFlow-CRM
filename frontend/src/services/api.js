@@ -52,16 +52,32 @@ export default async function apiRequest(
     // Read Response
     // ==========================
 
-    const data = await response.json();
+    const contentType =
+      response.headers.get("content-type") || "";
+
+    const isJson =
+      contentType.includes("application/json");
+
+    // Non-JSON bodies (for example HTML 500/502/504
+    // proxy or server error pages) are read as text
+    // instead of being parsed as JSON. This prevents
+    // unhandled SyntaxError: "Unexpected token < in
+    // JSON at position 0" crashes on the client.
+    const data = isJson
+      ? await response.json()
+      : await response.text();
 
     // ==========================
     // Handle API Errors
     // ==========================
 
     if (!response.ok) {
-      let message =
-        data?.message ||
-        "Something went wrong. Please try again.";
+      let message = isJson
+        ? data?.message ||
+          "Something went wrong. Please try again."
+        : data?.trim() ||
+          response.statusText ||
+          "Something went wrong. Please try again.";
 
       // ==========================
       // Duplicate MongoDB Error

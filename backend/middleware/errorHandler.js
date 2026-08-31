@@ -29,10 +29,35 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 11000) {
     statusCode = 409;
 
-    // Get duplicated field name
-    const field = Object.keys(
+    const keys = Object.keys(
       err.keyPattern || {}
-    )[0];
+    );
+
+    // ==========================
+    // Attendance Compound Key
+    // ==========================
+    // Unique index { gymId, memberId, date }.
+    // Displayed as a member/day conflict
+    // instead of exposing the gymId field.
+    // ==========================
+
+    if (
+      keys.includes("gymId") &&
+      keys.includes("memberId") &&
+      keys.includes("date")
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Attendance for this member on this date has already been marked.",
+      });
+    }
+
+    // ==========================
+    // Other Unique Keys
+    // ==========================
+
+    const field = keys[0];
 
     const value =
       err.keyValue?.[field];
