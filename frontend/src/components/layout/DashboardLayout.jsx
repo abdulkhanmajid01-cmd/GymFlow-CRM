@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }) {
     // login time by the backend.
     // ==========================
 
-    const role = user.role?.toLowerCase();
+    const role = String(user.role || "").toLowerCase();
 
     if (
       role !== "superadmin" &&
@@ -190,7 +190,7 @@ export default function DashboardLayout({ children }) {
   // ==========================
 
   const renderRole =
-    user.role?.toLowerCase();
+    String(user.role || "").toLowerCase();
 
   if (
     renderRole !== "superadmin" &&

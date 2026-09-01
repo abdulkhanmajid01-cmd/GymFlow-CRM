@@ -23,6 +23,7 @@ const membershipPlanRoutes = require("./routes/membershipPlanRoutes");
 const membershipReminderRoutes = require("./routes/membershipReminderRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 // Import Gym Routes
 const gymRoutes = require("./routes/gymRoutes");
@@ -119,6 +120,10 @@ app.use(
   "/api/attendance",
   attendanceRoutes
 );
+// ==========================
+// Payment Routes
+// ==========================
+app.use("/api/payments", paymentRoutes);
 
 // ==========================
 // Test Route
